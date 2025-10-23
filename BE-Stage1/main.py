@@ -113,3 +113,34 @@ def delete_string(string_value: str):
 
     save_data(new_data)
     return None
+
+from fastapi import FastAPI, Request
+import json
+
+app = FastAPI()
+
+@app.post("/strings")
+async def analyze_strings(request: Request):
+    try:
+        data = await request.json()
+        strings = data.get("strings")
+
+        if not strings:
+            return {"error": "Missing 'strings' field"}
+
+        analyzed = []
+        for s in strings:
+            analyzed.append({
+                "original": s,
+                "length": len(s),
+                "is_palindrome": s == s[::-1]
+            })
+
+        # Optionally store analyzed data in data.json
+        with open("data.json", "w") as f:
+            json.dump(analyzed, f, indent=4)
+
+        return {"analyzed_strings": analyzed}
+
+    except Exception as e:
+        return {"error": str(e)}
